@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COACHELLA 2026 - Couch Picker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-dark: #1a0533;
+      --bg-blue: #0a0a2e;
+      --pink: #ff2d7b;
+      --yellow: #ffe600;
+      --cyan: #00f0ff;
+      --will: #ff6b35;
+      --nik: #00c9a7;
+      --nop: #c678ff;
+      --kris: #ffd700;
+    }
+
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: var(--bg-dark);
+      color: #fff;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translate(0); }
+      10% { transform: translate(-6px, 4px); }
+      20% { transform: translate(6px, -4px); }
+      30% { transform: translate(-4px, 6px); }
+      40% { transform: translate(4px, -6px); }
+      50% { transform: translate(-6px, 2px); }
+      60% { transform: translate(6px, -2px); }
+      70% { transform: translate(-2px, 6px); }
+      80% { transform: translate(2px, -6px); }
+      90% { transform: translate(-4px, 4px); }
+    }
+
+    /* ============ FLASH OVERLAY ============ */
+    #flash {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+    #flash.fire {
+      animation: flashBang 0.15s ease-out;
+    }
+    @keyframes flashBang {
+      0% { opacity: 0.9; }
+      100% { opacity: 0; }
+    }
+
+    /* ============ FERRIS WHEEL ============ */
+    .ferris-wheel {
+      position: fixed;
+      bottom: -120px;
+      right: -60px;
+      width: 300px;
+      height: 300px;
+      opacity: 0.08;
+      animation: spin 30s linear infinite;
+      z-index: 0;
+    }
+    .ferris-wheel .rim {
+      width: 100%;
+      height: 100%;
+      border: 4px solid #fff;
+      border-radius: 50%;
+      position: relative;
+    }
+    .ferris-wheel .spoke {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 50%;
+      height: 2px;
+      background: #fff;
+      transform-origin: left center;
+    }
+    .ferris-wheel .spoke:nth-child(1) { transform: rotate(0deg); }
+    .ferris-wheel .spoke:nth-child(2) { transform: rotate(45deg); }
+    .ferris-wheel .spoke:nth-child(3) { transform: rotate(90deg); }
+    .ferris-wheel .spoke:nth-child(4) { transform: rotate(135deg); }
+    .ferris-wheel .spoke:nth-child(5) { transform: rotate(180deg); }
+    .ferris-wheel .spoke:nth-child(6) { transform: rotate(225deg); }
+    .ferris-wheel .spoke:nth-child(7) { transform: rotate(270deg); }
+    .ferris-wheel .spoke:nth-child(8) { transform: rotate(315deg); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ============ PHASE 0: LANDING ============ */
+    #landing {
+      text-align: center;
+      z-index: 1;
+      position: relative;
+    }
+    .hidden { display: none !important; }
+
+    .main-title {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(3rem, 10vw, 7rem);
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, #ff6b35, #ff2d7b, #ffe600);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 30px rgba(255, 45, 123, 0.5));
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { filter: drop-shadow(0 0 30px rgba(255, 45, 123, 0.3)); }
+      50% { filter: drop-shadow(0 0 50px rgba(255, 45, 123, 0.7)); }
+    }
+
+    .subtitle {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(1rem, 3vw, 1.8rem);
+      color: var(--cyan);
+      letter-spacing: 0.15em;
+      margin-top: 0.5rem;
+      animation: flicker 3s ease-in-out infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.3; }
+      94% { opacity: 1; }
+      96% { opacity: 0.4; }
+      97% { opacity: 1; }
+    }
+
+    .start-btn {
+      margin-top: 3rem;
+      padding: 1.2rem 3rem;
+      font-family: 'Bangers', cursive;
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      letter-spacing: 0.1em;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink), #a020f0);
+      border: 3px solid var(--cyan);
+      border-radius: 60px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      animation: btnGlow 2s ease-in-out infinite;
+      transition: transform 0.2s;
+    }
+    .start-btn:hover {
+      transform: scale(1.08);
+    }
+    @keyframes btnGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(255, 45, 123, 0.2); }
+      50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.6), 0 0 80px rgba(255, 45, 123, 0.4); }
+    }
+
+    .preview-names {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .preview-name {
+      padding: 0.4rem 1.2rem;
+      border-radius: 30px;
+      font-family: 'Bangers', cursive;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+    }
+
+    /* ============ PHASE 1: INTRO TEXT ============ */
+    #intro {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 10;
+      background: #000;
+    }
+    .intro-line {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(1.5rem, 5vw, 3.5rem);
+      letter-spacing: 0.1em;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .intro-line.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .intro-line:nth-child(1) { color: var(--pink); }
+    .intro-line:nth-child(2) { color: var(--yellow); }
+    .intro-line:nth-child(3) {
+      color: #fff;
+      text-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan);
+    }
+
+    /* ============ PHASE 2-4: CARDS ============ */
+    #card-stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      background: var(--bg-dark);
+    }
+    .stage-title {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(1.2rem, 3.5vw, 2.2rem);
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+      text-align: center;
+      min-height: 2.5em;
+      color: var(--cyan);
+      text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(0.8rem, 2vw, 1.5rem);
+      max-width: 600px;
+      width: 90vw;
+    }
+    .card {
+      border-radius: 20px;
+      padding: clamp(1rem, 3vw, 2rem);
+      text-align: center;
+      opacity: 0;
+      transform: translateX(-100vw);
+      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                  opacity 0.3s ease,
+                  box-shadow 0.3s ease,
+                  filter 0.3s ease;
+      position: relative;
+    }
+    .card.entered {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .card.dimmed {
+      filter: brightness(0.4);
+    }
+    .card.highlighted {
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.8),
+                  0 0 60px var(--cyan),
+                  inset 0 0 20px rgba(255, 255, 255, 0.2);
+      transform: scale(1.08);
+      z-index: 2;
+    }
+    .card.fly-left   { transform: translateX(-150vw) rotate(-30deg) !important; opacity: 0 !important; transition: all 0.8s ease-in !important; }
+    .card.fly-right  { transform: translateX(150vw) rotate(30deg) !important; opacity: 0 !important; transition: all 0.8s ease-in !important; }
+    .card.fly-up     { transform: translateY(-150vh) rotate(20deg) !important; opacity: 0 !important; transition: all 0.8s ease-in !important; }
+
+    .card-name {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      letter-spacing: 0.05em;
+      color: #fff;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    }
+    .card-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: clamp(0.7rem, 2vw, 1rem);
+      color: rgba(255,255,255,0.85);
+      margin-top: 0.3rem;
+      font-weight: 600;
+    }
+
+    .card:nth-child(1) { background: linear-gradient(135deg, var(--will), #e55a20); }
+    .card:nth-child(2) { background: linear-gradient(135deg, var(--nik), #00a88a); }
+    .card:nth-child(3) { background: linear-gradient(135deg, var(--nop), #a855e0); }
+    .card:nth-child(4) { background: linear-gradient(135deg, var(--kris), #e6c200); }
+
+    /* ============ PHASE 5-6: REVEAL ============ */
+    #reveal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      background: radial-gradient(circle at center, var(--nop), var(--bg-dark));
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #reveal.active {
+      opacity: 1;
+    }
+
+    .reveal-name {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(4rem, 15vw, 10rem);
+      letter-spacing: 0.05em;
+      color: #fff;
+      text-shadow:
+        0 0 10px #fff,
+        0 0 20px #fff,
+        0 0 40px var(--nop),
+        0 0 80px var(--nop),
+        0 0 120px var(--nop);
+      animation: revealPulse 1s ease-in-out infinite;
+      transform: scale(0);
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .reveal-name.pop {
+      transform: scale(1);
+    }
+    @keyframes revealPulse {
+      0%, 100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 40px var(--nop), 0 0 80px var(--nop); }
+      50% { text-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 80px var(--nop), 0 0 120px var(--nop), 0 0 160px var(--nop); }
+    }
+
+    .reveal-subtitle {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(1.2rem, 4vw, 2.5rem);
+      color: var(--yellow);
+      letter-spacing: 0.1em;
+      margin-top: 1rem;
+      animation: wobble 0.5s ease-in-out infinite alternate;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.5s;
+    }
+    .reveal-subtitle.show { opacity: 1; }
+    @keyframes wobble {
+      from { transform: rotate(-2deg); }
+      to { transform: rotate(2deg); }
+    }
+
+    .couch-icon {
+      font-size: clamp(3rem, 8vw, 5rem);
+      margin-top: 1rem;
+      opacity: 0;
+      transition: opacity 0.5s ease 1s;
+    }
+    .couch-icon.show { opacity: 1; }
+
+    .flavor-text {
+      font-family: 'Fredoka', sans-serif;
+      font-size: clamp(0.9rem, 2vw, 1.2rem);
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 1.5rem;
+      min-height: 1.5em;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .certified-seal {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: clamp(80px, 12vw, 120px);
+      height: clamp(80px, 12vw, 120px);
+      border: 3px solid var(--yellow);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: 'Bangers', cursive;
+      font-size: clamp(0.5rem, 1.2vw, 0.75rem);
+      color: var(--yellow);
+      letter-spacing: 0.05em;
+      animation: sealSpin 20s linear infinite;
+      opacity: 0;
+      transition: opacity 0.5s ease 2s;
+    }
+    .certified-seal.show { opacity: 0.6; }
+    @keyframes sealSpin { to { transform: rotate(360deg); } }
+
+    .rerun-btn {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      font-family: 'Bangers', cursive;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transition: opacity 0.5s ease 3s;
+    }
+    .rerun-btn.show { opacity: 1; }
+    .rerun-btn:hover { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
+
+    .rerun-msg {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 0.9rem;
+      color: var(--pink);
+      margin-top: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      font-weight: 600;
+    }
+    .rerun-msg.show { opacity: 1; }
+
+    /* ============ CONFETTI ============ */
+    .confetti-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+    .confetti {
+      position: absolute;
+      top: -20px;
+      width: 10px;
+      height: 10px;
+      opacity: 0.9;
+    }
+    .confetti.circle { border-radius: 50%; }
+    .confetti.rect { border-radius: 2px; width: 8px; height: 14px; }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Flash overlay -->
+  <div id="flash"></div>
+
+  <!-- Ferris wheel background -->
+  <div class="ferris-wheel">
+    <div class="rim">
+      <div class="spoke"></div>
+      <div class="spoke"></div>
+      <div class="spoke"></div>
+      <div class="spoke"></div>
+      <div class="spoke"></div>
+      <div class="spoke"></div>
+      <div class="spoke"></div>
+      <div class="spoke"></div>
+    </div>
+  </div>
+
+  <!-- PHASE 0: LANDING -->
+  <div id="landing">
+    <div class="main-title">COACHELLA 2026</div>
+    <div class="subtitle">SOMEBODY'S SLEEPING ON THE COUCH</div>
+    <button class="start-btn" id="startBtn">FIND OUT WHO</button>
+    <div class="preview-names">
+      <span class="preview-name" style="background:var(--will)">WILL</span>
+      <span class="preview-name" style="background:var(--nik)">NIK</span>
+      <span class="preview-name" style="background:var(--nop)">NOP</span>
+      <span class="preview-name" style="background:var(--kris)">KRIS</span>
+    </div>
+  </div>
+
+  <!-- PHASE 1: INTRO -->
+  <div id="intro" class="hidden">
+    <div class="intro-line">4 FRIENDS...</div>
+    <div class="intro-line">1 COUCH...</div>
+    <div class="intro-line">ZERO MERCY.</div>
+  </div>
+
+  <!-- PHASE 2-4: CARD STAGE -->
+  <div id="card-stage" class="hidden">
+    <div class="stage-title" id="stageTitle">THE CONTESTANTS</div>
+    <div class="card-grid" id="cardGrid">
+      <div class="card" id="card-0">
+        <div class="card-name">WILL</div>
+        <div class="card-title">The Spreadsheet Guy</div>
+      </div>
+      <div class="card" id="card-1">
+        <div class="card-name">NIK</div>
+        <div class="card-title">Main Character Energy</div>
+      </div>
+      <div class="card" id="card-2">
+        <div class="card-name">NOP</div>
+        <div class="card-title">The Wildcard</div>
+      </div>
+      <div class="card" id="card-3">
+        <div class="card-name">KRIS</div>
+        <div class="card-title">Already Asleep</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5-6: REVEAL -->
+  <div id="reveal" class="hidden">
+    <div class="reveal-name" id="revealName"></div>
+    <div class="reveal-subtitle" id="revealSub">YOU'RE ON THE COUCH, BABY</div>
+    <div class="couch-icon" id="couchIcon">&#x1F6CB;&#xFE0F;</div>
+    <div class="flavor-text" id="flavorText"></div>
+    <button class="rerun-btn" id="rerunBtn">RUN AGAIN?</button>
+    <div class="rerun-msg" id="rerunMsg">lol no. the couch gods don't do reruns.</div>
+    <div class="certified-seal" id="seal">CERTIFIED<br>FAIR &<br>BALANCED</div>
+  </div>
+
+  <!-- Confetti container -->
+  <div class="confetti-container" id="confettiBox"></div>
+
+  <script>
+    // ===== SEEDED RNG (mulberry32) =====
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    const SEED = 20260413;
+    const rng = mulberry32(SEED);
+    const names = ['Will', 'Nik', 'Nop', 'Kris'];
+    const winnerIndex = Math.floor(rng() * 4); // always 2 => Nop
+
+    // ===== DOM REFS =====
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+    const flash = $('#flash');
+    const landing = $('#landing');
+    const intro = $('#intro');
+    const cardStage = $('#card-stage');
+    const stageTitle = $('#stageTitle');
+    const cards = $$('.card');
+    const reveal = $('#reveal');
+    const revealName = $('#revealName');
+    const confettiBox = $('#confettiBox');
+
+    // ===== FLASH EFFECT =====
+    function fireFlash() {
+      flash.classList.remove('fire');
+      void flash.offsetWidth;
+      flash.classList.add('fire');
+    }
+
+    // ===== SCREEN SHAKE =====
+    function doShake() {
+      document.body.classList.remove('shake');
+      void document.body.offsetWidth;
+      document.body.classList.add('shake');
+      setTimeout(() => document.body.classList.remove('shake'), 500);
+    }
+
+    // ===== CONFETTI =====
+    function spawnConfetti(count) {
+      const colors = ['#ff2d7b', '#ffe600', '#00f0ff', '#ff6b35', '#c678ff', '#00c9a7', '#ffd700', '#fff'];
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        const isCircle = Math.random() > 0.5;
+        el.className = 'confetti ' + (isCircle ? 'circle' : 'rect');
+        el.style.left = (Math.random() * 100) + '%';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        const dur = 2 + Math.random() * 3;
+        const delay = Math.random() * 3;
+        el.style.animation = `confettiFall ${dur}s ease-in ${delay}s infinite`;
+        confettiBox.appendChild(el);
+      }
+    }
+
+    // ===== FLAVOR TEXT ROTATION =====
+    const flavorTexts = [
+      "Don't worry, it builds character",
+      "The couch has lumbar support (it doesn't)",
+      "At least you're still going to Coachella",
+      "RNG has spoken. No appeals.",
+      "Sleep tight, couch warrior",
+      "The other 3 beds send their regards",
+      "Couch: it's not a bed, it's a lifestyle",
+      "Plot twist: the couch was the friends we made along the way",
+    ];
+    let flavorIdx = 0;
+    function rotateFlavorText() {
+      const el = $('#flavorText');
+      el.style.opacity = '0';
+      setTimeout(() => {
+        el.textContent = flavorTexts[flavorIdx % flavorTexts.length];
+        el.style.opacity = '1';
+        flavorIdx++;
+      }, 300);
+    }
+
+    // ===== ANIMATION ORCHESTRATOR =====
+    function startShow() {
+      // PHASE 1: Dramatic intro
+      landing.classList.add('hidden');
+      intro.classList.remove('hidden');
+
+      const lines = $$('.intro-line');
+      let t = 500;
+      lines.forEach((line, i) => {
+        setTimeout(() => {
+          line.classList.add('visible');
+          fireFlash();
+        }, t);
+        t += 1000;
+      });
+
+      // PHASE 2: Contestants enter
+      setTimeout(() => {
+        intro.classList.add('hidden');
+        cardStage.classList.remove('hidden');
+        stageTitle.textContent = 'THE CONTESTANTS';
+
+        cards.forEach((card, i) => {
+          setTimeout(() => {
+            card.classList.add('entered');
+          }, i * 600);
+        });
+      }, t + 500);
+
+      const cardsEnterEnd = t + 500 + 4 * 600;
+
+      // PHASE 3: Roulette
+      setTimeout(() => {
+        stageTitle.textContent = 'THE COUCH GODS HAVE SPOKEN...';
+        startRoulette();
+      }, cardsEnterEnd + 500);
+    }
+
+    function startRoulette() {
+      // Build a timing sequence that always lands on winnerIndex
+      // We'll cycle through 0,1,2,3 repeatedly with increasing delays
+      const fastRounds = 6;   // 6 full cycles at fast speed
+      const slowSteps = [];   // individual slowing steps
+
+      // Build the full sequence of card indices
+      let sequence = [];
+      for (let round = 0; round < fastRounds; round++) {
+        for (let i = 0; i < 4; i++) sequence.push(i);
+      }
+
+      // Add slowdown steps that land on the winner
+      // We need to end on winnerIndex (2), so from wherever the fast rounds end (index 3),
+      // we add steps: 0, 1, 2 — but with a fake-out we pause on index before winner
+      const fakeOutIndex = (winnerIndex + 3) % 4; // one before winner = index 1 (Nik)
+      // Continue from 0 to fakeOutIndex
+      for (let i = 0; i < 4; i++) sequence.push(i);
+      // One more partial: 0, 1 (fakeout lands here)
+      for (let i = 0; i <= fakeOutIndex; i++) sequence.push(i);
+
+      // Build timing array
+      let delays = [];
+      // Fast phase
+      for (let i = 0; i < fastRounds * 4; i++) {
+        delays.push(80 + Math.floor(i * 3));
+      }
+      // Slowing phase (the extra 4 steps + partial)
+      const slowPortion = [200, 280, 380, 500, 650, 900];
+      for (let i = 0; i < slowPortion.length; i++) {
+        delays.push(slowPortion[i]);
+      }
+
+      let step = 0;
+      let currentHighlight = -1;
+
+      function highlightCard(idx) {
+        cards.forEach((c, i) => {
+          if (i === idx) {
+            c.classList.add('highlighted');
+            c.classList.remove('dimmed');
+          } else {
+            c.classList.remove('highlighted');
+            c.classList.add('dimmed');
+          }
+        });
+        currentHighlight = idx;
+      }
+
+      function nextStep() {
+        if (step >= sequence.length) {
+          // Landed on fakeout — do the false pause
+          stageTitle.textContent = 'IS IT...?';
+          setTimeout(() => {
+            // Jump to winner!
+            highlightCard(winnerIndex);
+            fireFlash();
+            doShake();
+            stageTitle.textContent = '';
+            setTimeout(() => triggerReveal(), 1200);
+          }, 1500);
+          return;
+        }
+
+        highlightCard(sequence[step]);
+        step++;
+        setTimeout(nextStep, delays[Math.min(step, delays.length - 1)]);
+      }
+
+      nextStep();
+    }
+
+    function triggerReveal() {
+      // Fly away non-winner cards
+      const flyClasses = ['fly-left', 'fly-right', 'fly-up'];
+      let fi = 0;
+      cards.forEach((card, i) => {
+        if (i !== winnerIndex) {
+          card.classList.add(flyClasses[fi % 3]);
+          fi++;
+        }
+      });
+
+      setTimeout(() => {
+        cardStage.classList.add('hidden');
+        reveal.classList.remove('hidden');
+        revealName.textContent = names[winnerIndex].toUpperCase() + '!!!';
+
+        setTimeout(() => {
+          reveal.classList.add('active');
+          revealName.classList.add('pop');
+          fireFlash();
+          doShake();
+          spawnConfetti(70);
+
+          setTimeout(() => {
+            $('#revealSub').classList.add('show');
+            $('#couchIcon').classList.add('show');
+            $('#seal').classList.add('show');
+            $('#rerunBtn').classList.add('show');
+
+            // Start flavor text rotation
+            rotateFlavorText();
+            setInterval(rotateFlavorText, 3500);
+          }, 600);
+        }, 100);
+      }, 900);
+    }
+
+    // ===== EVENT LISTENERS =====
+    $('#startBtn').addEventListener('click', startShow);
+
+    $('#rerunBtn').addEventListener('click', () => {
+      $('#rerunMsg').classList.add('show');
+      $('#rerunBtn').style.pointerEvents = 'none';
+      $('#rerunBtn').style.opacity = '0.3';
+    });
+  </script>
+</body>
+</html>
